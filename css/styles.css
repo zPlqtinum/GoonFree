@@ -170,6 +170,9 @@ main {
   line-height: 0.9;
   color: #fff;
   letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  margin-left: -0.05em;
   text-shadow:
     0 0 10px rgba(0, 0, 0, 1),
     0 0 30px rgba(0, 0, 0, 0.9),
@@ -182,6 +185,7 @@ main {
   font-size: 1.1rem;
   font-weight: 600;
   letter-spacing: 0.35em;
+  padding-left: 0.35em;
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   margin-top: 0.5rem;
@@ -447,12 +451,23 @@ main {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: background 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .level-row.current {
   background: rgba(255, 255, 255, 0.08);
   border-color: var(--flame-color);
 }
+
+.level-row.next {
+  opacity: 0.4;
+}
+
+.level-row.locked {
+  opacity: 0.2;
+}
+
 
 .level-row-icon {
   font-size: 1.2rem;

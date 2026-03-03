@@ -191,6 +191,9 @@
       animateCountUp(dom.streakNumber, streak);
     }
 
+    // Singular/plural label
+    dom.streakLabel.textContent = streak === 1 ? 'day strong' : 'days strong';
+
     // Level title and indicator
     dom.levelTitle.textContent = levelInfo.title;
     dom.levelIndicator.textContent = levelInfo.level === 0 ? '' : `Level ${levelInfo.level}`;
@@ -429,12 +432,17 @@
     const currentLevel = getLevelForDays(streak).level;
 
     dom.levelsList.innerHTML = '';
+    const nextLevel = currentLevel + 1;
     LEVELS.forEach((lvl) => {
       const row = document.createElement('div');
-      row.className = 'level-row' + (lvl.level === currentLevel ? ' current' : '');
+      let rowClass = 'level-row';
+      if (lvl.level <= currentLevel) rowClass += ' unlocked';
+      if (lvl.level === currentLevel) rowClass += ' current';
+      if (lvl.level === nextLevel) rowClass += ' next';
+      if (lvl.level > nextLevel) rowClass += ' locked';
+      row.className = rowClass;
 
       const daysText = lvl.days === 0 ? 'Day 0' : lvl.days + ' days';
-
       row.innerHTML =
         '<span class="level-row-icon">' + lvl.icon + '</span>' +
         '<div class="level-row-info">' +
