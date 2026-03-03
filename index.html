@@ -46,6 +46,7 @@
           <div id="progress-bar-container">
             <div id="progress-bar"></div>
           </div>
+          <button id="levels-btn">View all levels</button>
         </div>
       </div>
     </main>
@@ -114,21 +115,19 @@
       </div>
     </div>
 
+    <!-- Levels Modal -->
+    <div id="levels-modal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content levels-modal-content">
+        <h2>All Levels</h2>
+        <div id="levels-list"></div>
+        <button id="levels-close" class="btn-close">&times;</button>
+      </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" aria-live="polite"></div>
 
-    <!-- Developer Mode Panel -->
-    <div id="dev-panel">
-      <div id="dev-panel-header">
-        <span>Developer Mode</span>
-        <button id="dev-close">&times;</button>
-      </div>
-      <div id="dev-slider-row">
-        <input type="range" id="dev-slider" min="0" max="4000" value="0">
-        <span id="dev-day-display">0 days</span>
-      </div>
-      <div id="dev-levels"></div>
-    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

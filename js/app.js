@@ -10,8 +10,8 @@
   const MAX_LEVEL = 15;
 
   const LEVELS = [
-    { level: 0,  days: 0,    title: 'Unlit',          tier: null,            icon: '🕯️' },
-    { level: 1,  days: 3,    title: 'Spark',          tier: 'copper',        icon: '🔥' },
+    { level: 0,  days: 0,    title: 'Unlit',          tier: null,            icon: '💀' },
+    { level: 1,  days: 3,    title: 'Spark',          tier: 'copper',        icon: '✦' },
     { level: 2,  days: 7,    title: 'Ignited',        tier: 'copper',        icon: '🔥' },
     { level: 3,  days: 14,   title: 'Burning',        tier: 'bronze',        icon: '⚔️' },
     { level: 4,  days: 30,   title: 'Disciplined',    tier: 'bronze',        icon: '🛡️' },
@@ -29,7 +29,7 @@
   ];
 
   const FLAME_COLORS = [
-    '#555555',  // 0  - Smoke
+    '#661a1a',  // 0  - Dark ember
     '#FF8C42',  // 1  - Dull orange
     '#FF6A00',  // 2  - Strong orange
     '#FFB300',  // 3  - Amber
@@ -48,7 +48,7 @@
   ];
 
   const FLAME_GLOWS = [
-    'transparent',
+    'rgba(80,20,20,0.3)',
     'rgba(255,140,66,0.4)',
     'rgba(255,106,0,0.45)',
     'rgba(255,179,0,0.45)',
@@ -96,9 +96,9 @@
     const start = new Date(startDateISO);
     const now = new Date();
 
-    // Use UTC dates to avoid timezone issues
-    const startDay = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-    const nowDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    // Use local dates so streak ticks over at local midnight
+    const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+    const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
     const diffMs = nowDay - startDay;
     return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
@@ -119,10 +119,6 @@
     if (currentLevel >= MAX_LEVEL) return null;
     return LEVELS[currentLevel + 1];
   }
-
-  // ---- Developer Mode ----
-  let devMode = false;
-  let devOverrideDays = null;
 
   // ---- DOM References ----
   const dom = {};
@@ -148,11 +144,12 @@
     dom.levelUpTitle = document.getElementById('level-up-title');
     dom.flameContainer = document.getElementById('flame-container');
     dom.canvas = document.getElementById('fire-canvas');
-    dom.devPanel = document.getElementById('dev-panel');
-    dom.devSlider = document.getElementById('dev-slider');
-    dom.devDayDisplay = document.getElementById('dev-day-display');
-    dom.devLevels = document.getElementById('dev-levels');
-    dom.devClose = document.getElementById('dev-close');
+    // Levels
+    dom.levelsBtn = document.getElementById('levels-btn');
+    dom.levelsModal = document.getElementById('levels-modal');
+    dom.levelsModalBackdrop = dom.levelsModal.querySelector('.modal-backdrop');
+    dom.levelsList = document.getElementById('levels-list');
+    dom.levelsClose = document.getElementById('levels-close');
     // Sync
     dom.syncBtn = document.getElementById('sync-btn');
     dom.syncModal = document.getElementById('sync-modal');
@@ -425,6 +422,43 @@
     showToast('Backup code downloaded');
   }
 
+  // ---- Levels Modal ----
+  function openLevelsModal() {
+    const data = loadData() || getDefaultData();
+    const streak = calculateStreak(data.startDate);
+    const currentLevel = getLevelForDays(streak).level;
+
+    dom.levelsList.innerHTML = '';
+    LEVELS.forEach((lvl) => {
+      const row = document.createElement('div');
+      row.className = 'level-row' + (lvl.level === currentLevel ? ' current' : '');
+
+      const daysText = lvl.days === 0 ? 'Day 0' : lvl.days + ' days';
+
+      row.innerHTML =
+        '<span class="level-row-icon">' + lvl.icon + '</span>' +
+        '<div class="level-row-info">' +
+          '<span class="level-row-title">Lv. ' + lvl.level + ' — ' + lvl.title + '</span>' +
+          '<span class="level-row-tier">' + (lvl.tier ? lvl.tier.split('-').map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ') : '') + '</span>' +
+        '</div>' +
+        '<span class="level-row-days">' + daysText + '</span>';
+
+      dom.levelsList.appendChild(row);
+    });
+
+    dom.levelsModal.classList.add('active');
+    dom.levelsModal.setAttribute('aria-hidden', 'false');
+
+    // Scroll current level into view
+    const current = dom.levelsList.querySelector('.current');
+    if (current) current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function closeLevelsModal() {
+    dom.levelsModal.classList.remove('active');
+    dom.levelsModal.setAttribute('aria-hidden', 'true');
+  }
+
   function handleUnlink() {
     CloudSync.clearCode();
     showToast('Unlinked — streak is local only');
@@ -437,66 +471,6 @@
     if (!code || !CloudSync.isConfigured()) return;
     const data = loadData();
     if (data) await CloudSync.saveToCloud(code, data);
-  }
-
-  // ---- Developer Mode ----
-  function initDevMode() {
-    // Build level jump buttons
-    LEVELS.forEach((lvl) => {
-      const btn = document.createElement('button');
-      btn.className = 'dev-level-btn';
-      btn.textContent = `L${lvl.level} — ${lvl.title} (${lvl.days}d)`;
-      btn.addEventListener('click', () => {
-        devSetDays(lvl.days);
-        dom.devSlider.value = lvl.days;
-      });
-      dom.devLevels.appendChild(btn);
-    });
-
-    // Slider input
-    dom.devSlider.addEventListener('input', () => {
-      devSetDays(parseInt(dom.devSlider.value, 10));
-    });
-
-    // Close button
-    dom.devClose.addEventListener('click', toggleDevMode);
-
-    // Keyboard shortcut: Ctrl+Shift+D
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-        e.preventDefault();
-        toggleDevMode();
-      }
-    });
-  }
-
-  function toggleDevMode() {
-    devMode = !devMode;
-    dom.devPanel.classList.toggle('active', devMode);
-
-    if (!devMode) {
-      // Exiting dev mode — restore real streak
-      devOverrideDays = null;
-      displayedLevel = -1;
-      const data = loadData() || getDefaultData();
-      const streak = calculateStreak(data.startDate);
-      updateUI(streak, data, true);
-    }
-  }
-
-  function devSetDays(days) {
-    devOverrideDays = days;
-    dom.devDayDisplay.textContent = days + ' days';
-    const data = loadData() || getDefaultData();
-    displayedLevel = -1; // allow level-up animation
-    updateUI(days, data, true);
-
-    // Highlight active level button
-    const btns = dom.devLevels.querySelectorAll('.dev-level-btn');
-    const currentLevel = getLevelForDays(days).level;
-    btns.forEach((btn, i) => {
-      btn.classList.toggle('active', i === currentLevel);
-    });
   }
 
   // ---- Initialization ----
@@ -537,6 +511,11 @@
     dom.cancelReset.addEventListener('click', closeModal);
     dom.modalBackdrop.addEventListener('click', closeModal);
 
+    // Levels event listeners
+    dom.levelsBtn.addEventListener('click', openLevelsModal);
+    dom.levelsClose.addEventListener('click', closeLevelsModal);
+    dom.levelsModalBackdrop.addEventListener('click', closeLevelsModal);
+
     // Sync event listeners
     dom.syncBtn.addEventListener('click', openSyncModal);
     dom.syncClose.addEventListener('click', closeSyncModal);
@@ -552,7 +531,7 @@
 
     // Close modals on Escape
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeModal(); closeSyncModal(); }
+      if (e.key === 'Escape') { closeModal(); closeSyncModal(); closeLevelsModal(); }
     });
 
     // Init cloud sync
@@ -579,9 +558,6 @@
         }
       });
     }
-
-    // Init developer mode (Ctrl+Shift+D to toggle)
-    initDevMode();
 
     // Periodic streak check (every minute) for day rollover
     setInterval(() => {

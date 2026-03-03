@@ -6,22 +6,23 @@
 const FireEngine = (() => {
   // Level-specific fire configurations (16 levels, 0–15)
   const LEVEL_CONFIGS = [
-    { // Level 0 — Grey smoke only
-      spawnRate: 2,
-      colors: ['#2a2a2a', '#333', '#2e2e2e', '#252525'],
-      coreColors: ['#333', '#3a3a3a'],
-      speed: { min: 0.3, max: 0.8 },
-      spread: 1.2,
-      baseSize: 14,
+    { // Level 0 — Dark ember smolder
+      spawnRate: 4,
+      colors: ['#3a1c1c', '#4a2020', '#2a1515', '#551a1a'],
+      coreColors: ['#662222', '#883333'],
+      speed: { min: 0.4, max: 1.2 },
+      spread: 1.8,
+      baseSize: 12,
       sizeVariance: 8,
-      life: 120,
-      glow: 0,
-      glowColor: 'transparent',
-      embers: false,
-      coreIntensity: 0,
-      flameHeight: 0.35,
+      life: 100,
+      glow: 5,
+      glowColor: 'rgba(80,20,20,0.3)',
+      embers: true,
+      emberColors: ['#661a1a', '#882222', '#443333'],
+      coreIntensity: 0.15,
+      flameHeight: 0.38,
       flameWidth: 0.35,
-      isSmoke: true
+      isSmoke: false
     },
     { // Level 1 — Dull orange
       spawnRate: 5,
