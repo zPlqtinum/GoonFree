@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="description" content="GoonFree — Track your streak. Level up your discipline.">
+  <title>GoonFree</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Ambient background glow -->
+    <div id="bg-glow"></div>
+
+    <header>
+      <h1 class="app-title">GOONFREE</h1>
+    </header>
+
+    <main>
+      <div id="flame-container">
+        <canvas id="fire-canvas"></canvas>
+        <div id="streak-display">
+          <span id="streak-number">0</span>
+          <span id="streak-label">days strong</span>
+        </div>
+      </div>
+
+      <div id="level-info">
+        <div id="level-title-container">
+          <span id="level-title">Unlit</span>
+          <span id="level-indicator">Level 0</span>
+        </div>
+        <div id="badge-container">
+          <div id="badge">
+            <div id="badge-shine"></div>
+            <span id="badge-icon"></span>
+          </div>
+          <span id="badge-tier"></span>
+        </div>
+        <div id="next-level-info">
+          <span id="next-level-text"></span>
+          <div id="progress-bar-container">
+            <div id="progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div id="stats">
+        <span class="stat-label">Highest streak:</span>
+        <span id="highest-streak">0</span>
+        <span class="stat-label">days</span>
+      </div>
+      <div id="footer-actions">
+        <button id="sync-btn" aria-label="Sync streak">Backup</button>
+        <button id="reset-btn" aria-label="Reset streak">Reset</button>
+      </div>
+    </footer>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-modal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <h2>Extinguish your flame?</h2>
+        <p>Your current streak will be lost forever. Your highest streak record will be preserved.</p>
+        <div class="modal-actions">
+          <button id="cancel-reset" class="btn-secondary">Keep Going</button>
+          <button id="confirm-reset" class="btn-danger">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level Up Notification -->
+    <div id="level-up-notification" aria-hidden="true">
+      <span id="level-up-text">LEVEL UP</span>
+      <span id="level-up-title"></span>
+    </div>
+
+    <!-- Sync Modal -->
+    <div id="sync-modal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <!-- State: not linked -->
+        <div id="sync-unlinked">
+          <h2>Backup Your Streak</h2>
+          <p>Generate a recovery code to save your streak to the cloud. Enter it on any device to restore.</p>
+          <button id="sync-generate" class="btn-primary">Generate Code</button>
+          <div id="sync-divider"><span>or</span></div>
+          <p class="sync-small">Already have a code?</p>
+          <input type="text" id="sync-input" placeholder="000000-000000-000000-000000" maxlength="27" autocomplete="off" spellcheck="false">
+          <button id="sync-restore" class="btn-secondary">Restore</button>
+          <span id="sync-error"></span>
+        </div>
+        <!-- State: linked -->
+        <div id="sync-linked" style="display:none">
+          <h2>Synced</h2>
+          <p>Your streak is backed up. Copy this code to restore on another device.</p>
+          <div id="sync-code-display">
+            <span id="sync-code-text"></span>
+            <div id="sync-code-buttons">
+              <button id="sync-copy" title="Copy code">Copy</button>
+              <button id="sync-download" title="Download code">Save</button>
+            </div>
+          </div>
+          <span id="sync-status"></span>
+          <button id="sync-unlink" class="btn-secondary btn-small">Unlink</button>
+        </div>
+        <button id="sync-close" class="btn-close">&times;</button>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" aria-live="polite"></div>
+
+    <!-- Developer Mode Panel -->
+    <div id="dev-panel">
+      <div id="dev-panel-header">
+        <span>Developer Mode</span>
+        <button id="dev-close">&times;</button>
+      </div>
+      <div id="dev-slider-row">
+        <input type="range" id="dev-slider" min="0" max="4000" value="0">
+        <span id="dev-day-display">0 days</span>
+      </div>
+      <div id="dev-levels"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/fire.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
