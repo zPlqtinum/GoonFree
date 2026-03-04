@@ -533,6 +533,11 @@
     dom.syncCopy.addEventListener('click', handleCopy);
     dom.syncDownload.addEventListener('click', handleDownload);
     dom.syncUnlink.addEventListener('click', handleUnlink);
+    dom.syncInput.addEventListener('input', () => {
+      const digits = dom.syncInput.value.replace(/\D/g, '').slice(0, 24);
+      const groups = digits.match(/.{1,6}/g) || [];
+      dom.syncInput.value = groups.join('-');
+    });
     dom.syncInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleRestore();
     });
