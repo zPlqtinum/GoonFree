@@ -666,7 +666,7 @@
     flushJournalSave();
     const data = loadData() || getDefaultData();
     const streak = calculateStreak(data.startDate);
-    const entry = Journal.createEntry(streak);
+    const entry = Journal.createEntry(streak + 1);
     activeEntryId = entry.id;
     renderJournalSidebar();
     selectJournalEntry(entry.id);
