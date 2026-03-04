@@ -58,9 +58,13 @@
         <span id="highest-streak">0</span>
         <span class="stat-label">days</span>
       </div>
+      <div id="checkin-area">
+        <button id="checkin-btn" style="display:none">Check In</button>
+      </div>
       <div id="footer-actions">
         <button id="quotes-btn" aria-label="Quotes">Quotes</button>
         <button id="sync-btn" aria-label="Sync streak">Backup</button>
+        <button id="journal-btn" aria-label="Journal">Journal</button>
         <button id="reset-btn" aria-label="Reset streak">Reset</button>
       </div>
     </footer>
@@ -152,6 +156,79 @@
       </div>
     </div>
 
+    <!-- Journal Modal -->
+    <div id="journal-modal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content journal-modal-content">
+        <div id="journal-layout">
+          <div id="journal-sidebar">
+            <div id="journal-sidebar-header">
+              <h2>Journal</h2>
+              <button id="journal-new" class="btn-primary btn-small">+ New</button>
+            </div>
+            <div id="journal-entries-list"></div>
+          </div>
+          <div id="journal-editor">
+            <div id="journal-editor-empty">
+              <p>Select an entry or create a new one</p>
+            </div>
+            <div id="journal-editor-active" style="display:none">
+              <input type="text" id="journal-title-input" placeholder="Entry title..." spellcheck="false">
+              <textarea id="journal-content-input" placeholder="Write your thoughts..."></textarea>
+              <div id="journal-editor-footer">
+                <span id="journal-date-label"></span>
+                <button id="journal-delete-entry" class="btn-small btn-danger">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onboarding Modal (Check-In) -->
+    <div id="onboarding-modal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content onboarding-modal-content">
+        <h2>Daily Check-In</h2>
+        <p>Stay accountable by checking in every day. If you miss <strong>3 consecutive days</strong>, your streak resets automatically.</p>
+        <p class="onboarding-note">You can always change this later.</p>
+        <div class="modal-actions">
+          <button id="onboarding-skip" class="btn-secondary">Maybe Later</button>
+          <button id="onboarding-enable" class="btn-primary">Enable Check-In</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auto-Reset Modal (Missed 3 days) -->
+    <div id="autoreset-modal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content autoreset-modal-content">
+        <h2>Streak Reset</h2>
+        <p>You missed <strong>3+ days</strong> of check-ins. Your streak has been reset to keep you accountable.</p>
+        <p class="onboarding-note">Your highest streak record is preserved.</p>
+        <div class="modal-actions">
+          <button id="autoreset-ok" class="btn-primary">Start Fresh</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panic FAB -->
+    <button id="panic-fab" aria-label="Panic button">PANIC</button>
+
+    <!-- Panic Mode Overlay -->
+    <div id="panic-overlay">
+      <div id="panic-breathing">
+        <div id="panic-circle"></div>
+        <span id="panic-phase">Breathe in</span>
+      </div>
+      <div id="panic-quote-area">
+        <p id="panic-quote"></p>
+        <span id="panic-quote-author"></span>
+      </div>
+      <span id="panic-timer">00:00</span>
+      <button id="panic-exit">I'm okay</button>
+    </div>
+
     <!-- Toast -->
     <div id="toast" aria-live="polite"></div>
 
@@ -162,6 +239,9 @@
   <script src="js/fire.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/quotes.js"></script>
+  <script src="js/journal.js"></script>
+  <script src="js/checkin.js"></script>
+  <script src="js/panic.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

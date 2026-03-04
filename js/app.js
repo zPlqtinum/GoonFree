@@ -181,6 +181,27 @@
     dom.qotdPopup = document.getElementById('qotd-popup');
     dom.qotdText = document.getElementById('qotd-text');
     dom.qotdAuthor = document.getElementById('qotd-author');
+    // Journal
+    dom.journalBtn = document.getElementById('journal-btn');
+    dom.journalModal = document.getElementById('journal-modal');
+    dom.journalModalBackdrop = dom.journalModal.querySelector('.modal-backdrop');
+    dom.journalNew = document.getElementById('journal-new');
+    dom.journalEntriesList = document.getElementById('journal-entries-list');
+    dom.journalEditorEmpty = document.getElementById('journal-editor-empty');
+    dom.journalEditorActive = document.getElementById('journal-editor-active');
+    dom.journalTitleInput = document.getElementById('journal-title-input');
+    dom.journalContentInput = document.getElementById('journal-content-input');
+    dom.journalDateLabel = document.getElementById('journal-date-label');
+    dom.journalDeleteEntry = document.getElementById('journal-delete-entry');
+    // Check-In
+    dom.checkinBtn = document.getElementById('checkin-btn');
+    dom.onboardingModal = document.getElementById('onboarding-modal');
+    dom.onboardingModalBackdrop = dom.onboardingModal.querySelector('.modal-backdrop');
+    dom.onboardingEnable = document.getElementById('onboarding-enable');
+    dom.onboardingSkip = document.getElementById('onboarding-skip');
+    dom.autoresetModal = document.getElementById('autoreset-modal');
+    dom.autoresetModalBackdrop = dom.autoresetModal.querySelector('.modal-backdrop');
+    dom.autoresetOk = document.getElementById('autoreset-ok');
   }
 
   // ---- UI Updates ----
@@ -576,6 +597,202 @@
     dom.qotdPopup.setAttribute('aria-hidden', 'true');
   }
 
+  // ---- Journal UI ----
+  let activeEntryId = null;
+  let journalSaveTimer = null;
+
+  async function openJournalModal() {
+    dom.journalModal.classList.add('active');
+    dom.journalModal.setAttribute('aria-hidden', 'false');
+    // Pull from cloud first if linked
+    const code = CloudSync.getSavedCode();
+    if (code) await Journal.syncFromCloud(code);
+    renderJournalSidebar();
+    // If entries exist, select the first one
+    const entries = Journal.getEntries();
+    if (entries.length > 0) {
+      selectJournalEntry(entries[0].id);
+    } else {
+      showJournalEmpty();
+    }
+  }
+
+  function closeJournalModal() {
+    flushJournalSave();
+    dom.journalModal.classList.remove('active');
+    dom.journalModal.setAttribute('aria-hidden', 'true');
+    activeEntryId = null;
+    // Sync to cloud on close
+    const code = CloudSync.getSavedCode();
+    if (code) Journal.syncToCloud(code);
+  }
+
+  function renderJournalSidebar() {
+    const entries = Journal.getEntries();
+    dom.journalEntriesList.innerHTML = '';
+    entries.forEach(entry => {
+      const item = document.createElement('div');
+      item.className = 'journal-entry-item' + (entry.id === activeEntryId ? ' active' : '');
+      item.innerHTML =
+        '<div class="journal-entry-item-title">' + escapeHtml(entry.title) + '</div>' +
+        '<div class="journal-entry-item-date">' + entry.date + '</div>';
+      item.addEventListener('click', () => selectJournalEntry(entry.id));
+      dom.journalEntriesList.appendChild(item);
+    });
+  }
+
+  function selectJournalEntry(id) {
+    flushJournalSave();
+    activeEntryId = id;
+    const entry = Journal.getEntry(id);
+    if (!entry) { showJournalEmpty(); return; }
+
+    dom.journalEditorEmpty.style.display = 'none';
+    dom.journalEditorActive.style.display = '';
+    dom.journalTitleInput.value = entry.title;
+    dom.journalContentInput.value = entry.content;
+    dom.journalDateLabel.textContent = entry.date;
+    renderJournalSidebar();
+  }
+
+  function showJournalEmpty() {
+    activeEntryId = null;
+    dom.journalEditorEmpty.style.display = '';
+    dom.journalEditorActive.style.display = 'none';
+    renderJournalSidebar();
+  }
+
+  function handleJournalNew() {
+    flushJournalSave();
+    const data = loadData() || getDefaultData();
+    const streak = calculateStreak(data.startDate);
+    const entry = Journal.createEntry(streak);
+    activeEntryId = entry.id;
+    renderJournalSidebar();
+    selectJournalEntry(entry.id);
+    dom.journalContentInput.focus();
+  }
+
+  function handleJournalInput() {
+    if (!activeEntryId) return;
+    clearTimeout(journalSaveTimer);
+    journalSaveTimer = setTimeout(() => {
+      Journal.updateEntry(activeEntryId, {
+        title: dom.journalTitleInput.value,
+        content: dom.journalContentInput.value
+      });
+      renderJournalSidebar();
+    }, 500);
+  }
+
+  function flushJournalSave() {
+    if (journalSaveTimer && activeEntryId) {
+      clearTimeout(journalSaveTimer);
+      Journal.updateEntry(activeEntryId, {
+        title: dom.journalTitleInput.value,
+        content: dom.journalContentInput.value
+      });
+    }
+    journalSaveTimer = null;
+  }
+
+  function handleJournalDelete() {
+    if (!activeEntryId) return;
+    const deletedId = activeEntryId;
+    Journal.deleteEntry(activeEntryId);
+    activeEntryId = null;
+    // Sync deletion to cloud
+    const code = CloudSync.getSavedCode();
+    if (code) Journal.syncToCloud(code);
+    const entries = Journal.getEntries();
+    if (entries.length > 0) {
+      selectJournalEntry(entries[0].id);
+    } else {
+      showJournalEmpty();
+    }
+    renderJournalSidebar();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ---- Check-In UI ----
+  function updateCheckinButton() {
+    if (!CheckIn.isEnabled()) {
+      dom.checkinBtn.style.display = 'none';
+      return;
+    }
+    dom.checkinBtn.style.display = '';
+    if (CheckIn.hasCheckedInToday()) {
+      dom.checkinBtn.textContent = 'Checked in today';
+      dom.checkinBtn.classList.add('checked');
+    } else {
+      dom.checkinBtn.textContent = 'Check In';
+      dom.checkinBtn.classList.remove('checked');
+    }
+  }
+
+  function handleCheckIn() {
+    if (CheckIn.hasCheckedInToday()) return;
+    CheckIn.checkIn();
+    updateCheckinButton();
+    showToast('Checked in!');
+  }
+
+  function openOnboardingModal() {
+    dom.onboardingModal.classList.add('active');
+    dom.onboardingModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeOnboardingModal() {
+    dom.onboardingModal.classList.remove('active');
+    dom.onboardingModal.setAttribute('aria-hidden', 'true');
+  }
+
+  function openAutoresetModal() {
+    dom.autoresetModal.classList.add('active');
+    dom.autoresetModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeAutoresetModal() {
+    dom.autoresetModal.classList.remove('active');
+    dom.autoresetModal.setAttribute('aria-hidden', 'true');
+  }
+
+  function handleOnboardingEnable() {
+    CheckIn.enable();
+    closeOnboardingModal();
+    updateCheckinButton();
+    showToast('Daily check-in enabled');
+  }
+
+  function handleOnboardingSkip() {
+    CheckIn.dismiss();
+    closeOnboardingModal();
+  }
+
+  function handleAutoReset() {
+    // Reset the streak
+    const data = loadData() || getDefaultData();
+    data.startDate = new Date().toISOString();
+    data.lastResetTimestamp = new Date().toISOString();
+    saveData(data);
+
+    // Re-enable check-in with today
+    CheckIn.enable();
+
+    closeAutoresetModal();
+
+    displayedLevel = -1;
+    updateUI(0, data, true);
+    FireEngine.setLevel(0);
+    updateCheckinButton();
+    syncToCloud();
+  }
+
   function handleUnlink() {
     CloudSync.clearCode();
     showToast('Unlinked — streak is local only');
@@ -659,9 +876,25 @@
     dom.quotesPrev.addEventListener('click', showNextQuote);
     dom.quotesLike.addEventListener('click', toggleQuoteLike);
 
+    // Journal event listeners
+    dom.journalBtn.addEventListener('click', openJournalModal);
+    dom.journalModalBackdrop.addEventListener('click', closeJournalModal);
+    dom.journalNew.addEventListener('click', handleJournalNew);
+    dom.journalTitleInput.addEventListener('input', handleJournalInput);
+    dom.journalContentInput.addEventListener('input', handleJournalInput);
+    dom.journalDeleteEntry.addEventListener('click', handleJournalDelete);
+
+    // Check-in event listeners
+    dom.checkinBtn.addEventListener('click', handleCheckIn);
+    dom.onboardingEnable.addEventListener('click', handleOnboardingEnable);
+    dom.onboardingSkip.addEventListener('click', handleOnboardingSkip);
+    dom.onboardingModalBackdrop.addEventListener('click', handleOnboardingSkip);
+    dom.autoresetOk.addEventListener('click', handleAutoReset);
+    dom.autoresetModalBackdrop.addEventListener('click', handleAutoReset);
+
     // Close modals on Escape
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeModal(); closeSyncModal(); closeLevelsModal(); closeQuotesModal(); dismissQotd(); }
+      if (e.key === 'Escape') { closeModal(); closeSyncModal(); closeLevelsModal(); closeQuotesModal(); closeJournalModal(); closeOnboardingModal(); closeAutoresetModal(); dismissQotd(); if (PanicMode.isActive()) PanicMode.close(); }
     });
 
     // Arrow keys for quotes navigation
@@ -676,8 +909,22 @@
     // Init quotes engine
     QuotesEngine.init();
 
-    // Show QOTD popup
-    showQotdPopup();
+    // Init panic mode
+    PanicMode.init();
+
+    // Check-in: first visit → show onboarding, auto-reset check, update button
+    if (CheckIn.isFirstVisit()) {
+      openOnboardingModal();
+    } else if (CheckIn.shouldAutoReset()) {
+      openAutoresetModal();
+    } else {
+      updateCheckinButton();
+    }
+
+    // Show QOTD popup (delayed if onboarding shown)
+    if (!CheckIn.isFirstVisit() && !CheckIn.shouldAutoReset()) {
+      showQotdPopup();
+    }
 
     // If linked, sync from cloud on load
     const savedCode = CloudSync.getSavedCode();
