@@ -28,7 +28,7 @@ const Journal = (() => {
     const entry = {
       id: 'j_' + Date.now(),
       date: dateStr,
-      title: 'Day ' + streakDay + ' \u2014 ' + dateStr,
+      title: 'Day ' + streakDay + ' - ' + String(now.getMonth() + 1).padStart(2, '0') + '/' + String(now.getDate()).padStart(2, '0') + '/' + now.getFullYear(),
       content: '',
       updatedAt: now.toISOString()
     };
