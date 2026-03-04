@@ -167,6 +167,20 @@
     dom.syncStatus = document.getElementById('sync-status');
     dom.syncUnlink = document.getElementById('sync-unlink');
     dom.toast = document.getElementById('toast');
+    // Quotes
+    dom.quotesBtn = document.getElementById('quotes-btn');
+    dom.quotesModal = document.getElementById('quotes-modal');
+    dom.quotesModalBackdrop = dom.quotesModal.querySelector('.modal-backdrop');
+    dom.quotesClose = document.getElementById('quotes-close');
+    dom.quotesText = document.getElementById('quotes-text');
+    dom.quotesAuthor = document.getElementById('quotes-author');
+    dom.quotesPrev = document.getElementById('quotes-prev');
+    dom.quotesNext = document.getElementById('quotes-next');
+    dom.quotesLike = document.getElementById('quotes-like');
+    // QOTD
+    dom.qotdPopup = document.getElementById('qotd-popup');
+    dom.qotdText = document.getElementById('qotd-text');
+    dom.qotdAuthor = document.getElementById('qotd-author');
   }
 
   // ---- UI Updates ----
@@ -225,8 +239,14 @@
     // CSS custom properties for colors
     const color = FLAME_COLORS[levelInfo.level];
     const glow = FLAME_GLOWS[levelInfo.level];
+    const intensity = levelInfo.level / MAX_LEVEL; // 0 to 1
     document.documentElement.style.setProperty('--flame-color', color);
     document.documentElement.style.setProperty('--flame-glow', glow);
+    document.documentElement.style.setProperty('--level-intensity', intensity);
+
+    // Body pulse class for high levels
+    document.body.classList.toggle('high-level', levelInfo.level >= 7);
+    document.body.classList.toggle('max-level', levelInfo.level >= 14);
 
     // Fire engine level
     FireEngine.setLevel(levelInfo.level);
@@ -265,13 +285,25 @@
 
   // ---- Level Up Animation ----
   function triggerLevelUpAnimation(title) {
+    const level = getLevelForDays(calculateStreak((loadData() || getDefaultData()).startDate)).level;
+    const duration = level >= 10 ? 4000 : level >= 7 ? 3500 : 2500;
+
     dom.levelUpTitle.textContent = title;
     dom.levelUpNotification.classList.add('active');
     dom.flameContainer.classList.add('level-up-pulse');
 
+    // Screen flash for high levels
+    if (level >= 5) {
+      const flash = document.createElement('div');
+      flash.style.cssText = 'position:fixed;inset:0;z-index:999;pointer-events:none;background:' + FLAME_COLORS[level] + ';opacity:0.3;transition:opacity 1s ease;';
+      document.body.appendChild(flash);
+      requestAnimationFrame(() => { flash.style.opacity = '0'; });
+      setTimeout(() => flash.remove(), 1200);
+    }
+
     setTimeout(() => {
       dom.levelUpNotification.classList.remove('active');
-    }, 2500);
+    }, duration);
 
     setTimeout(() => {
       dom.flameContainer.classList.remove('level-up-pulse');
@@ -467,6 +499,83 @@
     dom.levelsModal.setAttribute('aria-hidden', 'true');
   }
 
+  // ---- Quotes Modal ----
+  let currentQuote = null;
+  let quotesReady = false;
+
+  async function openQuotesModal() {
+    dom.quotesModal.classList.add('active');
+    dom.quotesModal.setAttribute('aria-hidden', 'false');
+    if (!quotesReady) {
+      dom.quotesText.textContent = '...';
+      dom.quotesAuthor.textContent = '';
+      await QuotesEngine.fetchBatch();
+      quotesReady = true;
+    }
+    showNextQuote();
+  }
+
+  function closeQuotesModal() {
+    dom.quotesModal.classList.remove('active');
+    dom.quotesModal.setAttribute('aria-hidden', 'true');
+  }
+
+  function renderCurrentQuote() {
+    if (!currentQuote) {
+      dom.quotesText.textContent = 'No more quotes to show.';
+      dom.quotesAuthor.textContent = '';
+      dom.quotesLike.style.display = 'none';
+      return;
+    }
+    dom.quotesText.textContent = '\u201C' + currentQuote.text + '\u201D';
+    dom.quotesAuthor.textContent = '\u2014 ' + currentQuote.author;
+    dom.quotesLike.style.display = '';
+    dom.quotesLike.innerHTML = QuotesEngine.isLiked(currentQuote.id) ? '&#9829;' : '&#9825;';
+    dom.quotesLike.classList.toggle('liked', QuotesEngine.isLiked(currentQuote.id));
+  }
+
+  async function showNextQuote() {
+    let quote = QuotesEngine.getNextFromPool();
+    if (!quote) {
+      // Pool exhausted, fetch new batch
+      dom.quotesText.textContent = '...';
+      dom.quotesAuthor.textContent = '';
+      await QuotesEngine.fetchBatch();
+      quote = QuotesEngine.getNextFromPool();
+    }
+    currentQuote = quote;
+    renderCurrentQuote();
+  }
+
+  function toggleQuoteLike() {
+    if (!currentQuote) return;
+    const nowLiked = QuotesEngine.toggleLike(currentQuote.id);
+    dom.quotesLike.innerHTML = nowLiked ? '&#9829;' : '&#9825;';
+    dom.quotesLike.classList.toggle('liked', nowLiked);
+    if (nowLiked) {
+      setTimeout(() => showNextQuote(), 300);
+    }
+  }
+
+  // ---- QOTD Popup ----
+  async function showQotdPopup() {
+    if (!QuotesEngine.hasLikedQuotes()) return;
+    const quote = await QuotesEngine.getRandomLiked();
+    if (!quote) return;
+
+    dom.qotdText.textContent = '\u201C' + quote.text + '\u201D';
+    dom.qotdAuthor.textContent = '\u2014 ' + quote.author;
+    dom.qotdPopup.classList.add('active');
+    dom.qotdPopup.setAttribute('aria-hidden', 'false');
+
+    dom.qotdPopup.addEventListener('click', dismissQotd, { once: true });
+  }
+
+  function dismissQotd() {
+    dom.qotdPopup.classList.remove('active');
+    dom.qotdPopup.setAttribute('aria-hidden', 'true');
+  }
+
   function handleUnlink() {
     CloudSync.clearCode();
     showToast('Unlinked — streak is local only');
@@ -542,13 +651,33 @@
       if (e.key === 'Enter') handleRestore();
     });
 
+    // Quotes event listeners
+    dom.quotesBtn.addEventListener('click', openQuotesModal);
+    dom.quotesClose.addEventListener('click', closeQuotesModal);
+    dom.quotesModalBackdrop.addEventListener('click', closeQuotesModal);
+    dom.quotesNext.addEventListener('click', showNextQuote);
+    dom.quotesPrev.addEventListener('click', showNextQuote);
+    dom.quotesLike.addEventListener('click', toggleQuoteLike);
+
     // Close modals on Escape
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeModal(); closeSyncModal(); closeLevelsModal(); }
+      if (e.key === 'Escape') { closeModal(); closeSyncModal(); closeLevelsModal(); closeQuotesModal(); dismissQotd(); }
+    });
+
+    // Arrow keys for quotes navigation
+    document.addEventListener('keydown', (e) => {
+      if (!dom.quotesModal.classList.contains('active')) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') showNextQuote();
     });
 
     // Init cloud sync
     CloudSync.init();
+
+    // Init quotes engine
+    QuotesEngine.init();
+
+    // Show QOTD popup
+    showQotdPopup();
 
     // If linked, sync from cloud on load
     const savedCode = CloudSync.getSavedCode();

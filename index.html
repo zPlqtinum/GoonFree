@@ -58,6 +58,7 @@
         <span class="stat-label">days</span>
       </div>
       <div id="footer-actions">
+        <button id="quotes-btn" aria-label="Quotes">Quotes</button>
         <button id="sync-btn" aria-label="Sync streak">Backup</button>
         <button id="reset-btn" aria-label="Reset streak">Reset</button>
       </div>
@@ -125,6 +126,31 @@
       </div>
     </div>
 
+    <!-- Quotes Modal -->
+    <div id="quotes-modal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content quotes-modal-content">
+        <button id="quotes-close" class="btn-close">&times;</button>
+        <div id="quotes-card">
+          <p id="quotes-text"></p>
+          <span id="quotes-author"></span>
+        </div>
+        <div id="quotes-nav">
+          <button id="quotes-prev" class="quotes-arrow">&larr;</button>
+          <button id="quotes-next" class="quotes-arrow">&rarr;</button>
+        </div>
+        <button id="quotes-like" class="quotes-heart">&#9825;</button>
+      </div>
+    </div>
+
+    <!-- Quote of the Day Popup -->
+    <div id="qotd-popup" aria-hidden="true">
+      <div id="qotd-content">
+        <p id="qotd-text"></p>
+        <span id="qotd-author"></span>
+      </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" aria-live="polite"></div>
 
@@ -134,6 +160,7 @@
   <script src="js/config.js"></script>
   <script src="js/fire.js"></script>
   <script src="js/sync.js"></script>
+  <script src="js/quotes.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -95,6 +95,19 @@ body {
   z-index: 0;
 }
 
+/* High level: bg glow gets bigger */
+.high-level #bg-glow {
+  opacity: 0.25;
+  width: 800px;
+  height: 800px;
+}
+
+.max-level #bg-glow {
+  opacity: 0.35;
+  width: 1000px;
+  height: 1000px;
+}
+
 /* ---- Header ---- */
 header {
   z-index: 10;
@@ -179,6 +192,16 @@ main {
     0 0 60px rgba(0, 0, 0, 0.7),
     0 0 90px rgba(0, 0, 0, 0.5);
   transition: text-shadow 2s ease;
+}
+
+/* Badge pulse at high levels */
+.high-level #badge {
+  animation: badgePulse 3s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
 }
 
 #streak-label {
@@ -279,6 +302,12 @@ main {
 #badge-icon {
   font-size: 1.3rem;
   z-index: 1;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 #badge-tier {
@@ -886,13 +915,199 @@ footer {
 
 /* ---- Level-up pulse on flame container ---- */
 #flame-container.level-up-pulse {
-  animation: levelUpPulse 1s ease-out;
+  animation: levelUpPulse 1.2s ease-out;
 }
 
 @keyframes levelUpPulse {
-  0% { filter: brightness(1); }
-  30% { filter: brightness(2.5); }
-  100% { filter: brightness(1); }
+  0% { filter: brightness(1) saturate(1); transform: scale(1); }
+  20% { filter: brightness(3) saturate(1.5); transform: scale(1.05); }
+  100% { filter: brightness(1) saturate(1); transform: scale(1); }
+}
+
+.high-level #flame-container.level-up-pulse {
+  animation: levelUpPulseHigh 1.5s ease-out;
+}
+
+@keyframes levelUpPulseHigh {
+  0% { filter: brightness(1) saturate(1); transform: scale(1); }
+  15% { filter: brightness(4) saturate(2); transform: scale(1.08); }
+  100% { filter: brightness(1) saturate(1); transform: scale(1); }
+}
+
+/* ---- Quotes Button ---- */
+#quotes-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+  font-family: var(--font);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#quotes-btn:hover {
+  border-color: rgba(255, 200, 50, 0.4);
+  color: #ffc832;
+  background: rgba(255, 200, 50, 0.05);
+}
+
+/* ---- Quotes Modal ---- */
+.quotes-modal-content {
+  padding: 2rem 2.5rem !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 700px;
+}
+
+.quotes-modal-content h2 {
+  color: var(--text) !important;
+}
+
+#quotes-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  min-height: 160px;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+#quotes-type-label {
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+}
+
+#quotes-type-label.funny {
+  color: #ffc832;
+  background: rgba(255, 200, 50, 0.1);
+}
+
+#quotes-type-label.real {
+  color: #64b5f6;
+  background: rgba(100, 180, 255, 0.1);
+}
+
+#quotes-text {
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+  font-style: italic;
+}
+
+#quotes-author {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+#quotes-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.quotes-arrow {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+  font-size: 1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quotes-arrow:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.quotes-heart {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0.2rem;
+}
+
+.quotes-heart:hover {
+  transform: scale(1.15);
+}
+
+.quotes-heart.liked {
+  color: #ff4081;
+}
+
+/* ---- QOTD Popup ---- */
+#qotd-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#qotd-popup.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+#qotd-content {
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+#qotd-text {
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #fff;
+  font-style: italic;
+  margin: 0;
+}
+
+#qotd-author {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
 }
 
 /* ---- Responsive ---- */
