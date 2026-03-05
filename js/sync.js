@@ -1,5 +1,5 @@
 /* ============================================
-   GOONFREE — Cloud Sync Module
+   GOONFREE - Cloud Sync Module
    Recovery code + Supabase persistence
    ============================================ */
 
@@ -10,7 +10,7 @@ const CloudSync = (() => {
   function init() {
     if (SUPABASE_CONFIG.url === 'YOUR_SUPABASE_URL' ||
         SUPABASE_CONFIG.anonKey === 'YOUR_SUPABASE_ANON_KEY') {
-      console.warn('Supabase not configured — cloud sync disabled.');
+      console.warn('Supabase not configured - cloud sync disabled.');
       return false;
     }
     supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);

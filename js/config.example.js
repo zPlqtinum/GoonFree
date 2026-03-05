@@ -1,5 +1,5 @@
 /* ============================================
-   GOONFREE — Supabase Configuration
+   GOONFREE - Supabase Configuration
    Copy this file to config.js and fill in your credentials.
    ============================================ */
 

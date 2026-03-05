@@ -1,5 +1,5 @@
 /* ============================================
-   GOONFREE — Daily Check-In System
+   GOONFREE - Daily Check-In System
    Opt-in accountability with 3-day miss reset
    ============================================ */
 
@@ -59,16 +59,42 @@ const CheckIn = (() => {
     return data.lastCheckIn === getTodayString();
   }
 
-  function checkIn() {
+  function checkIn(mood) {
     const data = getData() || { enabled: true, history: [] };
     const today = getTodayString();
     data.lastCheckIn = today;
+    data.lastMood = mood || null;
     if (!data.history) data.history = [];
-    if (!data.history.includes(today)) {
-      data.history.push(today);
-      // Keep last 30 entries
-      if (data.history.length > 30) data.history = data.history.slice(-30);
+    // Remove old entry for today if exists
+    data.history = data.history.filter(function(e) {
+      return typeof e === 'string' ? e !== today : e.date !== today;
+    });
+    data.history.push({ date: today, mood: mood || null });
+    // Keep last 30 entries
+    if (data.history.length > 30) data.history = data.history.slice(-30);
+    saveData(data);
+  }
+
+  function getTodayMood() {
+    const data = getData();
+    if (!data || data.lastCheckIn !== getTodayString()) return null;
+    return data.lastMood || null;
+  }
+
+  function getTodayAttempts() {
+    const data = getData();
+    if (!data || !data.attempts) return 0;
+    if (data.attempts.date !== getTodayString()) return 0;
+    return data.attempts.count || 0;
+  }
+
+  function incrementAttempts() {
+    const data = getData() || { enabled: true };
+    const today = getTodayString();
+    if (!data.attempts || data.attempts.date !== today) {
+      data.attempts = { date: today, count: 0 };
     }
+    data.attempts.count++;
     saveData(data);
   }
 
@@ -100,6 +126,9 @@ const CheckIn = (() => {
     dismiss,
     hasCheckedInToday,
     checkIn,
+    getTodayMood,
+    getTodayAttempts,
+    incrementAttempts,
     daysSinceLastCheckIn,
     shouldAutoReset,
     getData

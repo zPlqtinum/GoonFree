@@ -1,12 +1,12 @@
 /* ============================================
-   GOONFREE — Fire Animation Engine
+   GOONFREE - Fire Animation Engine
    Canvas-based particle system
    ============================================ */
 
 const FireEngine = (() => {
   // Level-specific fire configurations (16 levels, 0–15)
   const LEVEL_CONFIGS = [
-    { // Level 0 — Dark ember smolder
+    { // Level 0 - Dark ember smolder
       spawnRate: 4,
       colors: ['#3a1c1c', '#4a2020', '#2a1515', '#551a1a'],
       coreColors: ['#662222', '#883333'],
@@ -24,7 +24,7 @@ const FireEngine = (() => {
       flameWidth: 0.35,
       isSmoke: false
     },
-    { // Level 1 — Dull orange
+    { // Level 1 - Dull orange
       spawnRate: 5,
       colors: ['#FF8C42', '#FF6A00', '#E65100', '#CC5500'],
       coreColors: ['#FFAB40', '#FFD180'],
@@ -40,7 +40,7 @@ const FireEngine = (() => {
       flameHeight: 0.4,
       flameWidth: 0.3
     },
-    { // Level 2 — Strong orange
+    { // Level 2 - Strong orange
       spawnRate: 7,
       colors: ['#FF6A00', '#FF4500', '#E64A19', '#FF5722'],
       coreColors: ['#FF9100', '#FFAB40'],
@@ -56,7 +56,7 @@ const FireEngine = (() => {
       flameHeight: 0.45,
       flameWidth: 0.33
     },
-    { // Level 3 — Amber
+    { // Level 3 - Amber
       spawnRate: 9,
       colors: ['#FFB300', '#FF8F00', '#FFA000', '#FF6F00'],
       coreColors: ['#FFD54F', '#FFECB3'],
@@ -72,7 +72,7 @@ const FireEngine = (() => {
       flameHeight: 0.48,
       flameWidth: 0.35
     },
-    { // Level 4 — Gold
+    { // Level 4 - Gold
       spawnRate: 11,
       colors: ['#FFD700', '#FFC107', '#FFB300', '#FFAB00'],
       coreColors: ['#FFF176', '#FFF9C4'],
@@ -88,7 +88,7 @@ const FireEngine = (() => {
       flameHeight: 0.52,
       flameWidth: 0.37
     },
-    { // Level 5 — Bright yellow
+    { // Level 5 - Bright yellow
       spawnRate: 13,
       colors: ['#FFEE58', '#FFD600', '#FFEB3B', '#FFC107'],
       coreColors: ['#FFFDE7', '#FFF9C4'],
@@ -104,7 +104,7 @@ const FireEngine = (() => {
       flameHeight: 0.55,
       flameWidth: 0.39
     },
-    { // Level 6 — White-hot
+    { // Level 6 - White-hot
       spawnRate: 15,
       colors: ['#FFFFFF', '#FFF8E1', '#FFD700', '#FFC107'],
       coreColors: ['#FFFFFF', '#FFF9C4'],
@@ -121,7 +121,7 @@ const FireEngine = (() => {
       flameHeight: 0.58,
       flameWidth: 0.41
     },
-    { // Level 7 — Blue + gold
+    { // Level 7 - Blue + gold
       spawnRate: 17,
       colors: ['#2979FF', '#448AFF', '#FFD700', '#FFC107'],
       coreColors: ['#82B1FF', '#BBDEFB'],
@@ -138,7 +138,7 @@ const FireEngine = (() => {
       flameHeight: 0.62,
       flameWidth: 0.43
     },
-    { // Level 8 — Electric blue
+    { // Level 8 - Electric blue
       spawnRate: 19,
       colors: ['#00E5FF', '#00B8D4', '#18FFFF', '#00BCD4'],
       coreColors: ['#E0F7FA', '#FFFFFF'],
@@ -155,7 +155,7 @@ const FireEngine = (() => {
       flameHeight: 0.65,
       flameWidth: 0.44
     },
-    { // Level 9 — Violet
+    { // Level 9 - Violet
       spawnRate: 21,
       colors: ['#7C4DFF', '#651FFF', '#B388FF', '#6200EA'],
       coreColors: ['#D1C4E9', '#EDE7F6'],
@@ -172,7 +172,7 @@ const FireEngine = (() => {
       flameHeight: 0.68,
       flameWidth: 0.45
     },
-    { // Level 10 — Deep purple
+    { // Level 10 - Deep purple
       spawnRate: 23,
       colors: ['#651FFF', '#6200EA', '#AA00FF', '#D500F9'],
       coreColors: ['#EA80FC', '#F3E5F5'],
@@ -189,7 +189,7 @@ const FireEngine = (() => {
       flameHeight: 0.71,
       flameWidth: 0.46
     },
-    { // Level 11 — Pink plasma
+    { // Level 11 - Pink plasma
       spawnRate: 25,
       colors: ['#FF4081', '#F50057', '#FF80AB', '#E91E63'],
       coreColors: ['#FCE4EC', '#FFFFFF'],
@@ -206,7 +206,7 @@ const FireEngine = (() => {
       flameHeight: 0.74,
       flameWidth: 0.47
     },
-    { // Level 12 — Emerald green-cyan
+    { // Level 12 - Emerald green-cyan
       spawnRate: 27,
       colors: ['#00E676', '#00C853', '#69F0AE', '#00E5FF'],
       coreColors: ['#B9F6CA', '#E0F7FA'],
@@ -223,7 +223,7 @@ const FireEngine = (() => {
       flameHeight: 0.76,
       flameWidth: 0.48
     },
-    { // Level 13 — Crimson red-gold
+    { // Level 13 - Crimson red-gold
       spawnRate: 29,
       colors: ['#FF1744', '#D50000', '#FF6D00', '#FF8A80'],
       coreColors: ['#FFCDD2', '#FFF3E0'],
@@ -240,7 +240,7 @@ const FireEngine = (() => {
       flameHeight: 0.78,
       flameWidth: 0.49
     },
-    { // Level 14 — White prism celestial
+    { // Level 14 - White prism celestial
       spawnRate: 32,
       colors: ['#FFFFFF', '#E8EAF6', '#CE93D8', '#80D8FF', '#B388FF'],
       coreColors: ['#FFFFFF', '#FAFAFA'],
@@ -257,7 +257,7 @@ const FireEngine = (() => {
       flameHeight: 0.8,
       flameWidth: 0.5
     },
-    { // Level 15 — Ultra celestial rainbow
+    { // Level 15 - Ultra celestial rainbow
       spawnRate: 36,
       colors: ['#FFFFFF', '#FF80AB', '#80D8FF', '#B9F6CA', '#CE93D8', '#FFECB3'],
       coreColors: ['#FFFFFF', '#FAFAFA'],
@@ -372,7 +372,7 @@ const FireEngine = (() => {
     }
   }
 
-  // Ember class — small bright sparks that fly upward
+  // Ember class - small bright sparks that fly upward
   class Ember {
     constructor() {
       this.reset();

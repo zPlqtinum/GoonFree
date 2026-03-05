@@ -1,5 +1,5 @@
 /* ============================================
-   GOONFREE — Panic Mode
+   GOONFREE - Panic Mode
    Breathing exercise + quote for urge moments
    ============================================ */
 
@@ -43,7 +43,7 @@ const PanicMode = (() => {
       const q = await QuotesEngine.getRandomLiked();
       if (q) {
         dom.quote.textContent = '\u201C' + q.text + '\u201D';
-        dom.quoteAuthor.textContent = '\u2014 ' + q.author;
+        dom.quoteAuthor.textContent = '- ' + q.author;
       }
     } else {
       // Fetch any random quote
@@ -51,7 +51,7 @@ const PanicMode = (() => {
       const q = QuotesEngine.getNextFromPool();
       if (q) {
         dom.quote.textContent = '\u201C' + q.text + '\u201D';
-        dom.quoteAuthor.textContent = '\u2014 ' + q.author;
+        dom.quoteAuthor.textContent = '- ' + q.author;
       }
     }
 

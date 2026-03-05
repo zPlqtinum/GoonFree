@@ -1,5 +1,5 @@
 /* ============================================
-   GOONFREE — Supabase Configuration
+   GOONFREE - Supabase Configuration
    Fill in your Supabase project credentials below.
    ============================================ */
 

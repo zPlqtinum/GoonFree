@@ -1,5 +1,5 @@
 /* ============================================
-   GOONFREE — Journal Module
+   GOONFREE - Journal Module
    Local entries with optional Supabase sync
    ============================================ */
 

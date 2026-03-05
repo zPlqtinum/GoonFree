@@ -1,5 +1,5 @@
 /* ============================================
-   GOONFREE — Quotes Engine
+   GOONFREE - Quotes Engine
    Supabase-powered quotes with like system
    ============================================ */
 

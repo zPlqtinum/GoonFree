@@ -1,5 +1,5 @@
 /* ============================================
-   GOONFREE — Application Logic
+   GOONFREE - Application Logic
    Streak tracking, levels, badges, UI
    ============================================ */
 
@@ -193,6 +193,10 @@
     dom.journalContentInput = document.getElementById('journal-content-input');
     dom.journalDateLabel = document.getElementById('journal-date-label');
     dom.journalDeleteEntry = document.getElementById('journal-delete-entry');
+    // Mood
+    dom.moodModal = document.getElementById('mood-modal');
+    dom.moodModalBackdrop = dom.moodModal.querySelector('.modal-backdrop');
+    dom.moodBtns = document.querySelectorAll('.mood-btn');
     // Check-In
     dom.checkinBtn = document.getElementById('checkin-btn');
     dom.onboardingModal = document.getElementById('onboarding-modal');
@@ -409,7 +413,7 @@
     }
 
     CloudSync.saveCode(code);
-    showToast('Code generated — streak backed up');
+    showToast('Code generated - streak backed up');
     openSyncModal(); // refresh to linked state
   }
 
@@ -499,7 +503,7 @@
       row.innerHTML =
         '<span class="level-row-icon">' + lvl.icon + '</span>' +
         '<div class="level-row-info">' +
-          '<span class="level-row-title">Lv. ' + lvl.level + ' — ' + lvl.title + '</span>' +
+          '<span class="level-row-title">Lv. ' + lvl.level + ' - ' + lvl.title + '</span>' +
           '<span class="level-row-tier">' + (lvl.tier ? lvl.tier.split('-').map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ') : '') + '</span>' +
         '</div>' +
         '<span class="level-row-days">' + daysText + '</span>';
@@ -549,7 +553,7 @@
       return;
     }
     dom.quotesText.textContent = '\u201C' + currentQuote.text + '\u201D';
-    dom.quotesAuthor.textContent = '\u2014 ' + currentQuote.author;
+    dom.quotesAuthor.textContent = '- ' + currentQuote.author;
     dom.quotesLike.style.display = '';
     dom.quotesLike.innerHTML = QuotesEngine.isLiked(currentQuote.id) ? '&#9829;' : '&#9825;';
     dom.quotesLike.classList.toggle('liked', QuotesEngine.isLiked(currentQuote.id));
@@ -585,7 +589,7 @@
     if (!quote) return;
 
     dom.qotdText.textContent = '\u201C' + quote.text + '\u201D';
-    dom.qotdAuthor.textContent = '\u2014 ' + quote.author;
+    dom.qotdAuthor.textContent = '- ' + quote.author;
     dom.qotdPopup.classList.add('active');
     dom.qotdPopup.setAttribute('aria-hidden', 'false');
 
@@ -720,13 +724,19 @@
   }
 
   // ---- Check-In UI ----
+  const MOOD_EMOJIS = { good: '😊', okay: '😐', rough: '😞' };
+
   function updateCheckinButton() {
     if (!CheckIn.isEnabled()) {
       dom.checkinBtn.style.display = 'none';
       return;
     }
     dom.checkinBtn.style.display = '';
-    if (CheckIn.hasCheckedInToday()) {
+    const todayMood = CheckIn.getTodayMood();
+    if (todayMood) {
+      dom.checkinBtn.textContent = MOOD_EMOJIS[todayMood] + ' Checked in';
+      dom.checkinBtn.classList.add('checked');
+    } else if (CheckIn.getTodayAttempts() >= 3) {
       dom.checkinBtn.textContent = 'Checked in today';
       dom.checkinBtn.classList.add('checked');
     } else {
@@ -736,10 +746,27 @@
   }
 
   function handleCheckIn() {
-    if (CheckIn.hasCheckedInToday()) return;
-    CheckIn.checkIn();
+    if (CheckIn.getTodayMood()) return;
+    if (CheckIn.getTodayAttempts() >= 3) return;
+    CheckIn.incrementAttempts();
+    openMoodModal();
+  }
+
+  function openMoodModal() {
+    dom.moodModal.classList.add('active');
+    dom.moodModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeMoodModal() {
+    dom.moodModal.classList.remove('active');
+    dom.moodModal.setAttribute('aria-hidden', 'true');
+  }
+
+  function handleMoodSelect(mood) {
+    CheckIn.checkIn(mood);
+    closeMoodModal();
     updateCheckinButton();
-    showToast('Checked in!');
+    showToast('Checked in - ' + (MOOD_EMOJIS[mood] || ''));
   }
 
   function openOnboardingModal() {
@@ -795,7 +822,7 @@
 
   function handleUnlink() {
     CloudSync.clearCode();
-    showToast('Unlinked — streak is local only');
+    showToast('Unlinked - streak is local only');
     openSyncModal(); // refresh to unlinked state
   }
 
@@ -883,6 +910,11 @@
     dom.journalTitleInput.addEventListener('input', handleJournalInput);
     dom.journalContentInput.addEventListener('input', handleJournalInput);
     dom.journalDeleteEntry.addEventListener('click', handleJournalDelete);
+
+    // Mood event listeners
+    dom.moodBtns.forEach(btn => {
+      btn.addEventListener('click', () => handleMoodSelect(btn.dataset.mood));
+    });
 
     // Check-in event listeners
     dom.checkinBtn.addEventListener('click', handleCheckIn);

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0a0a0a">
-  <meta name="description" content="GoonFree — Track your streak. Level up your discipline.">
+  <meta name="description" content="GoonFree - Track your streak. Level up your discipline.">
   <title>GoonFree</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -181,6 +181,28 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mood Picker Modal -->
+    <div id="mood-modal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content mood-modal-content">
+        <h2>How are you feeling?</h2>
+        <div id="mood-options">
+          <button class="mood-btn" data-mood="good">
+            <span class="mood-emoji">😊</span>
+            <span class="mood-label">Good</span>
+          </button>
+          <button class="mood-btn" data-mood="okay">
+            <span class="mood-emoji">😐</span>
+            <span class="mood-label">Okay</span>
+          </button>
+          <button class="mood-btn" data-mood="rough">
+            <span class="mood-emoji">😞</span>
+            <span class="mood-label">Rough</span>
+          </button>
         </div>
       </div>
     </div>
